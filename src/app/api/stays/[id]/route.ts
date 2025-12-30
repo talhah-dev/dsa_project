@@ -2,10 +2,14 @@ import { DB } from "@/lib/db"
 import Stay from "@/models/Stay"
 import { NextRequest, NextResponse } from "next/server"
 
-export async function GET(_: NextRequest, { params }: { params: { id: string } }) {
+type Ctx = { params: Promise<{ id: string }> }
+
+export async function GET(_: NextRequest, context: Ctx) {
     try {
         await DB()
-        const stay = await Stay.findById(params.id)
+        const { id } = await context.params
+
+        const stay = await Stay.findById(id)
             .populate("bedId", "code ward status")
             .populate("patientId", "name mrn phone")
 
@@ -17,12 +21,13 @@ export async function GET(_: NextRequest, { params }: { params: { id: string } }
     }
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, context: Ctx) {
     try {
         await DB()
+        const { id } = await context.params
         const body = await req.json()
 
-        const stay = await Stay.findByIdAndUpdate(params.id, body, { new: true })
+        const stay = await Stay.findByIdAndUpdate(id, body, { new: true })
         if (!stay) return NextResponse.json({ message: "Stay not found" }, { status: 404 })
 
         return NextResponse.json({ stay })

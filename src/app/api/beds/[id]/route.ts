@@ -2,10 +2,14 @@ import { DB } from "@/lib/db"
 import Bed from "@/models/Bed"
 import { NextRequest, NextResponse } from "next/server"
 
-export async function GET(_: NextRequest, { params }: { params: { id: string } }) {
+type Ctx = { params: Promise<{ id: string }> }
+
+export async function GET(_: NextRequest, context: Ctx) {
     try {
         await DB()
-        const bed = await Bed.findById(params.id)
+        const { id } = await context.params
+
+        const bed = await Bed.findById(id)
         if (!bed) return NextResponse.json({ message: "Bed not found" }, { status: 404 })
         return NextResponse.json({ bed })
     } catch (error) {
@@ -14,12 +18,13 @@ export async function GET(_: NextRequest, { params }: { params: { id: string } }
     }
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, context: Ctx) {
     try {
         await DB()
+        const { id } = await context.params
         const body = await req.json()
 
-        const bed = await Bed.findByIdAndUpdate(params.id, body, { new: true })
+        const bed = await Bed.findByIdAndUpdate(id, body, { new: true })
         if (!bed) return NextResponse.json({ message: "Bed not found" }, { status: 404 })
 
         return NextResponse.json({ bed })
@@ -30,10 +35,12 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
 }
 
-export async function DELETE(_: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_: NextRequest, context: Ctx) {
     try {
         await DB()
-        const bed = await Bed.findByIdAndDelete(params.id)
+        const { id } = await context.params
+
+        const bed = await Bed.findByIdAndDelete(id)
         if (!bed) return NextResponse.json({ message: "Bed not found" }, { status: 404 })
         return NextResponse.json({ message: "Bed deleted" })
     } catch (error) {

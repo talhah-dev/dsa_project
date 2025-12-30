@@ -2,10 +2,14 @@ import { DB } from "@/lib/db"
 import Patient from "@/models/Patient"
 import { NextRequest, NextResponse } from "next/server"
 
-export async function GET(_: NextRequest, { params }: { params: { id: string } }) {
+type Ctx = { params: Promise<{ id: string }> }
+
+export async function GET(_: NextRequest, context: Ctx) {
     try {
         await DB()
-        const patient = await Patient.findById(params.id)
+        const { id } = await context.params
+
+        const patient = await Patient.findById(id)
         if (!patient) return NextResponse.json({ message: "Patient not found" }, { status: 404 })
         return NextResponse.json({ patient })
     } catch (error) {
@@ -14,12 +18,13 @@ export async function GET(_: NextRequest, { params }: { params: { id: string } }
     }
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, context: Ctx) {
     try {
         await DB()
+        const { id } = await context.params
         const body = await req.json()
 
-        const patient = await Patient.findByIdAndUpdate(params.id, body, { new: true })
+        const patient = await Patient.findByIdAndUpdate(id, body, { new: true })
         if (!patient) return NextResponse.json({ message: "Patient not found" }, { status: 404 })
 
         return NextResponse.json({ patient })
