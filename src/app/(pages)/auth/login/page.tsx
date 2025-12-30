@@ -2,16 +2,28 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import axios from "axios"
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 
+type LoginResponse = {
+    message: string
+    token: string
+    user: { id: string; name: string; email: string }
+}
+
 export default function LoginPage() {
+    const router = useRouter()
+
     const [loading, setLoading] = React.useState(false)
     const [showPassword, setShowPassword] = React.useState(false)
     const [error, setError] = React.useState<string | null>(null)
+    const [remember, setRemember] = React.useState(true)
 
     const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -28,11 +40,19 @@ export default function LoginPage() {
             return
         }
 
-        // Frontend-only: replace with real auth later
-        await new Promise((r) => setTimeout(r, 650))
+        try {
+            const res = await axios.post("/api/auth/login", { email, password })
+            const data = res.data as LoginResponse
 
-        setLoading(false)
-        alert("Logged in (mock). Connect API / auth to finish login.")
+            if (remember) localStorage.setItem("token", data.token)
+            else sessionStorage.setItem("token", data.token)
+
+            router.push("/dashboard")
+        } catch (err: any) {
+            setError(err?.response?.data?.message || "Login failed.")
+        } finally {
+            setLoading(false)
+        }
     }
 
     return (
@@ -47,13 +67,7 @@ export default function LoginPage() {
                     <form onSubmit={onSubmit} className="space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="email">Email</Label>
-                            <Input
-                                id="email"
-                                name="email"
-                                type="email"
-                                placeholder="you@example.com"
-                                autoComplete="email"
-                            />
+                            <Input id="email" name="email" type="email" placeholder="you@example.com" />
                         </div>
 
                         <div className="space-y-2">
@@ -64,13 +78,8 @@ export default function LoginPage() {
                                     name="password"
                                     type={showPassword ? "text" : "password"}
                                     placeholder="••••••••"
-                                    autoComplete="current-password"
                                 />
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => setShowPassword((v) => !v)}
-                                >
+                                <Button type="button" variant="outline" onClick={() => setShowPassword((v) => !v)}>
                                     {showPassword ? "Hide" : "Show"}
                                 </Button>
                             </div>
@@ -78,7 +87,10 @@ export default function LoginPage() {
 
                         <div className="flex items-center justify-between">
                             <label className="flex items-center gap-2 text-sm">
-                                <Checkbox id="remember" />
+                                <Checkbox
+                                    checked={remember}
+                                    onCheckedChange={(v) => setRemember(Boolean(v))}
+                                />
                                 Remember me
                             </label>
 

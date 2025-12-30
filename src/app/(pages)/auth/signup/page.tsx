@@ -2,12 +2,22 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import axios from "axios"
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
+type SignupResponse = {
+    message: string
+    user: { id: string; name: string; email: string }
+}
+
 export default function SignupPage() {
+    const router = useRouter()
+
     const [loading, setLoading] = React.useState(false)
     const [showPassword, setShowPassword] = React.useState(false)
     const [showConfirm, setShowConfirm] = React.useState(false)
@@ -42,11 +52,14 @@ export default function SignupPage() {
             return
         }
 
-        // Frontend-only: replace with API call later
-        await new Promise((r) => setTimeout(r, 700))
-
-        setLoading(false)
-        alert("Account created (mock). Connect API to finish signup.")
+        try {
+            await axios.post("/api/auth/signup", { name, email, password })
+            router.push("/login")
+        } catch (err: any) {
+            setError(err?.response?.data?.message || "Signup failed.")
+        } finally {
+            setLoading(false)
+        }
     }
 
     return (
@@ -85,11 +98,7 @@ export default function SignupPage() {
                                     placeholder="••••••••"
                                     autoComplete="new-password"
                                 />
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => setShowPassword((v) => !v)}
-                                >
+                                <Button type="button" variant="outline" onClick={() => setShowPassword((v) => !v)}>
                                     {showPassword ? "Hide" : "Show"}
                                 </Button>
                             </div>
@@ -105,11 +114,7 @@ export default function SignupPage() {
                                     placeholder="••••••••"
                                     autoComplete="new-password"
                                 />
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => setShowConfirm((v) => !v)}
-                                >
+                                <Button type="button" variant="outline" onClick={() => setShowConfirm((v) => !v)}>
                                     {showConfirm ? "Hide" : "Show"}
                                 </Button>
                             </div>
