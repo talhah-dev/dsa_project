@@ -22,9 +22,12 @@ export async function GET(req: NextRequest) {
             .sort({ createdAt: -1 })
 
         return NextResponse.json({ stays })
-    } catch (error) {
-        console.log(error)
-        return NextResponse.json({ message: "Failed to fetch stays" }, { status: 500 })
+    } catch (error: any) {
+        console.log("STAYS_GET_ERROR:", error)
+        return NextResponse.json(
+            { message: "Failed to fetch stays", error: error?.message || String(error) },
+            { status: 500 }
+        )
     }
 }
 
