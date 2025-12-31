@@ -52,19 +52,31 @@ export default function DashboardPage() {
     const fetchAll = React.useCallback(async () => {
         setLoading(true)
         setError(null)
+
         try {
-            const [bedsRes, staysRes] = await Promise.all([
+            const [bedsRes, staysRes] = await Promise.allSettled([
                 axios.get("/api/beds"),
                 axios.get("/api/stays"),
             ])
-            setBeds(bedsRes.data.beds ?? [])
-            setStays(staysRes.data.stays ?? [])
-        } catch (err: any) {
-            setError(err?.response?.data?.message || "Failed to load dashboard data")
+
+            if (bedsRes.status === "fulfilled") {
+                setBeds(bedsRes.value.data.beds ?? [])
+            } else {
+                setBeds([])
+                setError(bedsRes.reason?.response?.data?.message || "Failed to fetch beds")
+            }
+
+            if (staysRes.status === "fulfilled") {
+                setStays(staysRes.value.data.stays ?? [])
+            } else {
+                setStays([])
+                setError(staysRes.reason?.response?.data?.message || "Failed to fetch stays")
+            }
         } finally {
             setLoading(false)
         }
     }, [])
+
 
     React.useEffect(() => {
         fetchAll()

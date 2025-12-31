@@ -54,7 +54,7 @@ export default function SignupPage() {
 
         try {
             await axios.post("/api/auth/signup", { name, email, password })
-            router.push("/login")
+            router.push("/auth/login")
         } catch (err: any) {
             setError(err?.response?.data?.message || "Signup failed.")
         } finally {
@@ -132,7 +132,7 @@ export default function SignupPage() {
 
                         <p className="text-center text-sm text-muted-foreground">
                             Already have an account?{" "}
-                            <Link href="/login" className="text-foreground underline underline-offset-4">
+                            <Link href="/auth/login" className="text-foreground underline underline-offset-4">
                                 Log in
                             </Link>
                         </p>
