@@ -148,11 +148,11 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            {error && (
+            {/* {error && (
                 <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm">
                     {error}
                 </div>
-            )}
+            )} */}
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <Card className="rounded-2xl">
